@@ -19,6 +19,17 @@ export interface Selection {
 
 const STORAGE_KEY = 'mcp-playground.connection';
 
+/**
+ * 生成唯一 ID。
+ * crypto.randomUUID 仅在安全上下文（https / localhost）可用，
+ * 通过普通 HTTP 域名访问时会缺失，这里做降级兜底。
+ */
+function safeId(): string {
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `h_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
 interface PersistShape {
   url: string;
   transport: TransportKind;
@@ -29,7 +40,7 @@ function loadPersisted(): PersistShape {
   const fallback: PersistShape = {
     url: '',
     transport: 'auto',
-    headers: [{ id: crypto.randomUUID(), key: 'Authorization', value: 'Bearer ', enabled: true }],
+    headers: [{ id: safeId(), key: 'Authorization', value: 'Bearer ', enabled: true }],
   };
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return fallback;
@@ -126,7 +137,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     persist(get());
   },
   addHeader: () => {
-    const headers = [...get().headers, { id: crypto.randomUUID(), key: '', value: '', enabled: true }];
+    const headers = [...get().headers, { id: safeId(), key: '', value: '', enabled: true }];
     set({ headers });
     persist(get());
   },
@@ -138,7 +149,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   removeHeader: (id) => {
     const remaining = get().headers.filter((h) => h.id !== id);
     const headers =
-      remaining.length > 0 ? remaining : [{ id: crypto.randomUUID(), key: '', value: '', enabled: true }];
+      remaining.length > 0 ? remaining : [{ id: safeId(), key: '', value: '', enabled: true }];
     set({ headers });
     persist(get());
   },

@@ -4,6 +4,8 @@
 
 后端使用官方 `@modelcontextprotocol/sdk` 作为客户端代理，规避浏览器 CORS，并支持 **Streamable HTTP / SSE 自动探测**。
 
+![](./screenshots.png)
+
 ## 技术栈
 
 - **前端** `packages/web`：React + Vite + TypeScript + Tailwind CSS + TanStack Query + Zustand

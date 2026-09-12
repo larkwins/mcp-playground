@@ -4,6 +4,8 @@ A Postman-like **MCP Server debugging tool**. Fill in a remote MCP Server URL wi
 
 The backend uses the official `@modelcontextprotocol/sdk` as a client proxy to bypass browser CORS, and supports **Streamable HTTP / SSE auto-detection**.
 
+![](./screenshots.png)
+
 ## Tech Stack
 
 - **Frontend** `packages/web`: React + Vite + TypeScript + Tailwind CSS + TanStack Query + Zustand

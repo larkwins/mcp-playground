@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.turbo
+**/*.log
+.git
+.gitignore
+Dockerfile
+.dockerignore
+preview
+plans
+README.md

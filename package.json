@@ -1,0 +1,17 @@
+{
+  "name": "mcp-playground",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Postman-like debugging playground for remote MCP servers",
+  "scripts": {
+    "dev": "concurrently -n server,web -c cyan,green \"pnpm --filter @mcp-playground/server dev\" \"pnpm --filter @mcp-playground/web dev\"",
+    "dev:server": "pnpm --filter @mcp-playground/server dev",
+    "dev:web": "pnpm --filter @mcp-playground/web dev",
+    "build": "pnpm --filter @mcp-playground/shared build && pnpm --filter @mcp-playground/server build && pnpm --filter @mcp-playground/web build",
+    "start": "pnpm --filter @mcp-playground/server start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "packageManager": "pnpm@11.9.0"
+}

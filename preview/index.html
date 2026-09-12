@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MCP Playground · 界面预览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --indigo-600: #4F46E5;
+    --indigo-500: #6366F1;
+    --indigo-400: #818CF8;
+    --indigo-50: #EEF0FF;
+
+    --bg-0: #FFFFFF;
+    --bg-1: #F8FAFC;
+    --bg-2: #F1F5F9;
+    --bg-3: #E9EDF3;
+
+    --ink-0: #0F172A;
+    --ink-1: #475569;
+    --ink-2: #94A3B8;
+
+    --line: #E5E9F0;
+
+    --green: #22C55E;
+    --red: #EF4444;
+    --amber: #F59E0B;
+    --blue: #3B82F6;
+
+    --code-bg: #0E1526;
+    --code-bg-2: #131C31;
+    --code-line: #22304d;
+
+    --radius: 12px;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.05);
+    --shadow-md: 0 8px 24px -6px rgba(15,23,42,.14), 0 2px 6px rgba(15,23,42,.06);
+    --shadow-lg: 0 24px 60px -12px rgba(79,70,229,.28);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 14px;
+    color: var(--ink-0);
+    background:
+      radial-gradient(1200px 600px at 12% -10%, #EEF1FF 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, #F0FDFA 0%, transparent 45%),
+      var(--bg-1);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.01em; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; }
+  input, select { font-family: inherit; }
+
+  /* ============ TOP BAR ============ */
+  .topbar {
+    flex: none;
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+    padding: 0 22px;
+    z-index: 30;
+  }
+
+  .topbar-main {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    height: 62px;
+  }
+
+  .brand { display: flex; align-items: center; gap: 11px; flex: none; }
+  .logo {
+    width: 38px; height: 38px; border-radius: 11px;
+    background: linear-gradient(135deg, var(--indigo-500), var(--indigo-600));
+    display: grid; place-items: center;
+    box-shadow: 0 6px 16px -4px rgba(79,70,229,.5);
+    position: relative;
+  }
+  .logo svg { width: 21px; height: 21px; }
+  .brand-text h1 { font-size: 16px; font-weight: 700; line-height: 1; }
+  .brand-text span { font-size: 11px; color: var(--ink-2); letter-spacing: .04em; text-transform: uppercase; font-weight: 600; }
+
+  .divider-v { width: 1px; height: 30px; background: var(--line); flex: none; }
+
+  /* URL 地址栏 */
+  .addressbar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 5px 6px 5px 14px;
+    transition: border-color .2s, box-shadow .2s;
+    min-width: 0;
+  }
+  .addressbar:focus-within {
+    border-color: var(--indigo-400);
+    box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+    background: #fff;
+  }
+  .method-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    color: var(--indigo-600);
+    background: var(--indigo-50);
+    padding: 5px 9px; border-radius: 7px;
+    flex: none; letter-spacing: .02em;
+  }
+  .addressbar input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px; color: var(--ink-0); min-width: 0;
+  }
+  .addressbar input::placeholder { color: var(--ink-2); }
+
+  .transport-select {
+    flex: none;
+    display: flex; align-items: center; gap: 6px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12.5px; font-weight: 500; color: var(--ink-1);
+  }
+  .transport-select select { border: none; outline: none; background: transparent; font-weight: 600; color: var(--ink-0); cursor: pointer; font-size: 12.5px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13.5px; font-weight: 600;
+    padding: 9px 18px; border-radius: 9px;
+    transition: transform .12s, box-shadow .2s, background .2s;
+    flex: none;
+  }
+  .btn:active { transform: translateY(1px) scale(.99); }
+  .btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--indigo-500), var(--indigo-600));
+    box-shadow: 0 6px 16px -5px rgba(79,70,229,.6);
+  }
+  .btn-primary:hover { box-shadow: 0 10px 22px -6px rgba(79,70,229,.7); }
+  .btn-ghost { color: var(--ink-1); background: var(--bg-2); }
+  .btn-ghost:hover { background: var(--bg-3); color: var(--ink-0); }
+
+  .status-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 13px 7px 11px; border-radius: 999px;
+    font-size: 12.5px; font-weight: 600;
+    background: rgba(34,197,94,.1); color: #15803D;
+    border: 1px solid rgba(34,197,94,.25);
+    flex: none;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); position: relative; }
+  .dot::after {
+    content: ''; position: absolute; inset: -4px; border-radius: 50%;
+    border: 2px solid var(--green); opacity: .5;
+    animation: ping 1.8s cubic-bezier(0,0,.2,1) infinite;
+  }
+  @keyframes ping { 0% { transform: scale(.8); opacity: .6; } 80%,100% { transform: scale(2); opacity: 0; } }
+
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: grid; place-items: center;
+    color: var(--ink-1); background: var(--bg-2);
+    transition: background .2s, color .2s;
+    flex: none;
+  }
+  .icon-btn:hover { background: var(--bg-3); color: var(--ink-0); }
+
+  /* Header 展开区 */
+  .headers-panel {
+    max-height: 0; overflow: hidden;
+    transition: max-height .3s ease;
+    border-top: 1px solid transparent;
+  }
+  .headers-panel.open { max-height: 220px; border-top-color: var(--line); }
+  .headers-inner { padding: 16px 2px 18px; }
+  .headers-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .headers-label .badge { background: var(--bg-2); color: var(--ink-1); padding: 2px 7px; border-radius: 6px; font-size: 10px; }
+  .header-row { display: flex; gap: 10px; margin-bottom: 8px; }
+  .header-row .kv {
+    display: flex; align-items: center;
+    background: var(--bg-1); border: 1px solid var(--line);
+    border-radius: 8px; padding: 0 12px; height: 38px;
+  }
+  .header-row .kv.k { width: 260px; }
+  .header-row .kv.v { flex: 1; }
+  .header-row .kv input { border: none; outline: none; background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; width: 100%; color: var(--ink-0); }
+  .header-row .kv.k input { color: var(--indigo-600); font-weight: 500; }
+  .header-del { width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; color: var(--ink-2); flex: none; transition: color .2s, background .2s; }
+  .header-del:hover { color: var(--red); background: rgba(239,68,68,.08); }
+  .add-header { display: inline-flex; align-items: center; gap: 6px; color: var(--indigo-600); font-size: 12.5px; font-weight: 600; padding: 7px 4px; margin-top: 4px; }
+  .add-header:hover { color: var(--indigo-500); }
+
+  /* ============ WORKSPACE ============ */
+  .workspace { flex: 1; display: flex; min-height: 0; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 300px; flex: none;
+    background: rgba(255,255,255,.6);
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
+  .server-card {
+    margin: 14px 14px 6px; padding: 13px 14px;
+    background: linear-gradient(135deg, #fff, var(--indigo-50));
+    border: 1px solid #E3E6FB; border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+  .server-card .row1 { display: flex; align-items: center; gap: 9px; }
+  .server-card .sicon { width: 30px; height: 30px; border-radius: 8px; background: #fff; border: 1px solid var(--line); display: grid; place-items: center; color: var(--indigo-600); flex: none; }
+  .server-card .sname { font-weight: 700; font-size: 13.5px; font-family: 'Space Grotesk'; }
+  .server-card .sver { font-size: 11px; color: var(--ink-2); font-family: 'JetBrains Mono'; }
+  .server-card .caps { display: flex; gap: 6px; margin-top: 11px; }
+  .cap-tag { font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #fff; border: 1px solid var(--line); color: var(--ink-1); }
+  .cap-tag b { color: var(--indigo-600); }
+
+  .tabs { display: flex; gap: 4px; padding: 12px 14px 0; }
+  .tab {
+    flex: 1; text-align: center; padding: 8px 0 10px;
+    font-size: 12.5px; font-weight: 600; color: var(--ink-2);
+    border-bottom: 2px solid transparent; position: relative;
+    transition: color .2s;
+  }
+  .tab .count { display: inline-block; margin-left: 5px; font-size: 10.5px; background: var(--bg-2); color: var(--ink-1); padding: 1px 6px; border-radius: 999px; font-family: 'JetBrains Mono'; }
+  .tab.active { color: var(--indigo-600); border-bottom-color: var(--indigo-600); }
+  .tab.active .count { background: var(--indigo-50); color: var(--indigo-600); }
+  .tab:hover:not(.active) { color: var(--ink-0); }
+
+  .search {
+    margin: 12px 14px; display: flex; align-items: center; gap: 8px;
+    background: var(--bg-1); border: 1px solid var(--line); border-radius: 9px;
+    padding: 8px 11px; color: var(--ink-2);
+  }
+  .search:focus-within { border-color: var(--indigo-400); background: #fff; }
+  .search input { border: none; outline: none; background: transparent; font-size: 13px; flex: 1; color: var(--ink-0); }
+
+  .list { flex: 1; overflow-y: auto; padding: 0 10px 14px; }
+  .list::-webkit-scrollbar { width: 8px; }
+  .list::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 4px; }
+
+  .item {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 11px 12px; border-radius: 10px; margin-bottom: 3px;
+    cursor: pointer; position: relative;
+    transition: background .15s, transform .15s;
+    border: 1px solid transparent;
+  }
+  .item:hover { background: var(--bg-1); }
+  .item.active { background: #fff; border-color: #E3E6FB; box-shadow: var(--shadow-sm); }
+  .item.active::before {
+    content: ''; position: absolute; left: -10px; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 24px; border-radius: 0 3px 3px 0;
+    background: linear-gradient(var(--indigo-500), var(--indigo-600));
+  }
+  .item-ic {
+    width: 30px; height: 30px; border-radius: 8px; flex: none;
+    display: grid; place-items: center;
+    background: var(--indigo-50); color: var(--indigo-600);
+    font-family: 'JetBrains Mono'; font-size: 13px;
+  }
+  .item.active .item-ic { background: linear-gradient(135deg, var(--indigo-500), var(--indigo-600)); color: #fff; }
+  .item-body { min-width: 0; flex: 1; }
+  .item-name { font-size: 13px; font-weight: 600; font-family: 'JetBrains Mono'; color: var(--ink-0); }
+  .item-desc { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ============ MAIN ============ */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .main-scroll { flex: 1; overflow-y: auto; padding: 22px 26px 30px; }
+  .main-scroll::-webkit-scrollbar { width: 10px; }
+  .main-scroll::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 5px; }
+
+  .tool-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 6px; }
+  .tool-head .th-ic { width: 46px; height: 46px; border-radius: 12px; flex: none; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, var(--indigo-500), var(--indigo-600)); box-shadow: 0 8px 20px -6px rgba(79,70,229,.5); }
+  .tool-head h2 { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono'; letter-spacing: -.02em; }
+  .tool-head .ttag { font-size: 11px; font-weight: 600; color: var(--indigo-600); background: var(--indigo-50); padding: 3px 9px; border-radius: 6px; margin-left: 4px; vertical-align: middle; }
+  .tool-head p { color: var(--ink-1); font-size: 13.5px; margin-top: 5px; line-height: 1.5; max-width: 640px; }
+
+  .section { margin-top: 24px; }
+  .section-title { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-1); margin-bottom: 14px; }
+  .section-title .line { flex: 1; height: 1px; background: var(--line); }
+  .section-title .req { color: var(--ink-2); font-weight: 600; letter-spacing: 0; text-transform: none; font-size: 11.5px; }
+
+  .card {
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 14px; box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  /* 参数表单 */
+  .field { padding: 15px 18px; border-bottom: 1px solid var(--line); }
+  .field:last-child { border-bottom: none; }
+  .field-top { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; }
+  .field-name { font-family: 'JetBrains Mono'; font-size: 13px; font-weight: 600; color: var(--ink-0); }
+  .type-tag { font-size: 10.5px; font-weight: 600; font-family: 'JetBrains Mono'; padding: 2px 7px; border-radius: 5px; background: var(--bg-2); color: var(--ink-1); }
+  .type-tag.str { color: #0369A1; background: #E0F2FE; }
+  .type-tag.num { color: #A16207; background: #FEF9C3; }
+  .type-tag.bool { color: #7C3AED; background: #F3E8FF; }
+  .req-mark { color: var(--red); font-size: 12px; font-weight: 700; }
+  .opt-mark { font-size: 10.5px; color: var(--ink-2); font-weight: 600; }
+  .field-hint { font-size: 12px; color: var(--ink-2); margin-left: auto; }
+  .field-input {
+    width: 100%; height: 40px; border-radius: 9px;
+    border: 1px solid var(--line); background: var(--bg-1);
+    padding: 0 13px; font-size: 13px; color: var(--ink-0);
+    font-family: 'JetBrains Mono'; outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  .field-input:focus { border-color: var(--indigo-400); background: #fff; box-shadow: 0 0 0 4px rgba(99,102,241,.1); }
+  .field-input::placeholder { color: var(--ink-2); font-family: 'JetBrains Mono'; }
+
+  .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+  .toggle { width: 42px; height: 24px; border-radius: 999px; background: var(--indigo-600); position: relative; flex: none; transition: background .2s; }
+  .toggle::after { content: ''; position: absolute; top: 3px; left: 21px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: var(--shadow-sm); transition: left .2s; }
+  .toggle.off { background: var(--bg-3); }
+  .toggle.off::after { left: 3px; }
+  .toggle-label { font-size: 12.5px; color: var(--ink-1); font-family: 'JetBrains Mono'; }
+
+  /* Run 区 */
+  .run-bar { display: flex; align-items: center; gap: 14px; margin-top: 20px; }
+  .btn-run {
+    display: inline-flex; align-items: center; gap: 9px;
+    color: #fff; font-size: 14px; font-weight: 600;
+    padding: 12px 26px; border-radius: 11px;
+    background: linear-gradient(135deg, var(--indigo-500), var(--indigo-600));
+    box-shadow: var(--shadow-lg);
+    transition: transform .12s, box-shadow .2s;
+  }
+  .btn-run:hover { box-shadow: 0 30px 66px -12px rgba(79,70,229,.42); transform: translateY(-1px); }
+  .btn-run:active { transform: translateY(0); }
+  .run-meta { font-size: 12.5px; color: var(--ink-2); font-family: 'JetBrains Mono'; }
+  .btn-run-ghost { color: var(--ink-1); font-size: 13.5px; font-weight: 600; padding: 12px 18px; border-radius: 11px; background: var(--bg-2); }
+  .btn-run-ghost:hover { background: var(--bg-3); }
+
+  /* 结果查看器 */
+  .result { margin-top: 26px; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-md); border: 1px solid var(--code-line); }
+  .result-head {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--code-bg-2); padding: 12px 16px;
+    border-bottom: 1px solid var(--code-line);
+  }
+  .result-status { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: #4ADE80; }
+  .result-status .rdot { width: 8px; height: 8px; border-radius: 50%; background: #4ADE80; box-shadow: 0 0 10px #4ADE80; }
+  .result-badges { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+  .rbadge { font-size: 11px; font-family: 'JetBrains Mono'; color: #94A3B8; background: rgba(148,163,184,.12); padding: 3px 9px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px; }
+  .rbadge b { color: #E2E8F0; font-weight: 600; }
+  .result-tabs { display: flex; gap: 3px; }
+  .rtab { font-size: 12px; font-weight: 600; color: #64748B; padding: 5px 11px; border-radius: 7px; font-family: 'JetBrains Mono'; }
+  .rtab.active { color: #E2E8F0; background: rgba(148,163,184,.14); }
+  .copy-btn { color: #94A3B8; width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; }
+  .copy-btn:hover { color: #E2E8F0; background: rgba(148,163,184,.14); }
+
+  .code {
+    background: var(--code-bg); padding: 18px 20px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.75;
+    overflow-x: auto; color: #CBD5E1;
+  }
+  .code::-webkit-scrollbar { height: 8px; }
+  .code::-webkit-scrollbar-thumb { background: #2a3854; border-radius: 4px; }
+  .ln { color: #3f4d6b; display: inline-block; width: 26px; user-select: none; }
+  .tok-key { color: #7DD3FC; }
+  .tok-str { color: #86EFAC; }
+  .tok-num { color: #FDBA74; }
+  .tok-bool { color: #C4B5FD; }
+  .tok-punc { color: #64748B; }
+
+  .fade-up { animation: fadeUp .5s cubic-bezier(.16,1,.3,1) both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+  .footnote { position: fixed; bottom: 12px; right: 16px; font-size: 11px; color: var(--ink-2); background: rgba(255,255,255,.7); backdrop-filter: blur(6px); padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <div class="topbar-main">
+      <div class="brand">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>MCP Playground</h1>
+          <span>Server Inspector</span>
+        </div>
+      </div>
+
+      <div class="divider-v"></div>
+
+      <div class="addressbar">
+        <span class="method-pill">MCP</span>
+        <input class="mono" type="text" value="https://mcp.example.com/filesystem/mcp" spellcheck="false" />
+      </div>
+
+      <div class="transport-select">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        <select>
+          <option>Auto</option>
+          <option>Streamable HTTP</option>
+          <option>SSE</option>
+        </select>
+      </div>
+
+      <button class="icon-btn" id="toggleHeaders" title="配置 Headers">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+      </button>
+
+      <button class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg>
+        连接
+      </button>
+
+      <div class="status-chip">
+        <span class="dot"></span>已连接
+      </div>
+    </div>
+
+    <!-- Header 编辑区 -->
+    <div class="headers-panel" id="headersPanel">
+      <div class="headers-inner">
+        <div class="headers-label">请求 Headers <span class="badge">2 active</span></div>
+        <div class="header-row">
+          <div class="kv k"><input value="Authorization" spellcheck="false" /></div>
+          <div class="kv v"><input value="Bearer sk-••••••••••••••••3a9f" spellcheck="false" /></div>
+          <button class="header-del"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="header-row">
+          <div class="kv k"><input value="X-Client-Id" spellcheck="false" /></div>
+          <div class="kv v"><input value="playground-web" spellcheck="false" /></div>
+          <button class="header-del"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <button class="add-header">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          添加 Header
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== WORKSPACE ===================== -->
+  <div class="workspace">
+
+    <!-- ---------- SIDEBAR ---------- -->
+    <aside class="sidebar">
+      <div class="server-card">
+        <div class="row1">
+          <div class="sicon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6H4zM4 14h16v6H4z"/><path d="M8 7h.01M8 17h.01"/></svg>
+          </div>
+          <div>
+            <div class="sname">Filesystem MCP</div>
+            <div class="sver">v1.4.2 · protocol 2025-06-18</div>
+          </div>
+        </div>
+        <div class="caps">
+          <span class="cap-tag"><b>6</b> Tools</span>
+          <span class="cap-tag"><b>3</b> Resources</span>
+          <span class="cap-tag"><b>2</b> Prompts</span>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="tools">Tools <span class="count">6</span></div>
+        <div class="tab" data-tab="resources">Resources <span class="count">3</span></div>
+        <div class="tab" data-tab="prompts">Prompts <span class="count">2</span></div>
+      </div>
+
+      <div class="search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input placeholder="搜索 tools…" />
+      </div>
+
+      <!-- Tools 列表 -->
+      <div class="list" data-list="tools">
+        <div class="item active">
+          <div class="item-ic">fn</div>
+          <div class="item-body">
+            <div class="item-name">read_file</div>
+            <div class="item-desc">读取指定路径文件的完整文本内容</div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-ic">fn</div>
+          <div class="item-body">
+            <div class="item-name">write_file</div>
+            <div class="item-desc">将内容写入文件，不存在则创建</div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-ic">fn</div>
+          <div class="item-body">
+            <div class="item-name">list_directory</div>
+            <div class="item-desc">列出目录下的文件与子目录</div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-ic">fn</div>
+          <div class="item-body">
+            <div class="item-name">search_files</div>
+            <div class="item-desc">按通配符递归搜索匹配的文件路径</div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-ic">fn</div>
+          <div class="item-body">
+            <div class="item-name">get_file_info</div>
+            <div class="item-desc">获取文件大小、修改时间等元信息</div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-ic">fn</div>
+          <div class="item-body">
+            <div class="item-name">move_file</div>
+            <div class="item-desc">移动或重命名文件与目录</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resources 列表 -->
+      <div class="list" data-list="resources" style="display:none">
+        <div class="item">
+          <div class="item-ic">::</div>
+          <div class="item-body">
+            <div class="item-name">README.md</div>
+            <div class="item-desc">file:///workspace/README.md</div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-ic">::</div>
+          <div class="item-body">
+            <div class="item-name">config.json</div>
+            <div class="item-desc">file:///workspace/config.json</div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-ic">::</div>
+          <div class="item-body">
+            <div class="item-name">package.json</div>
+            <div class="item-desc">file:///workspace/package.json</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prompts 列表 -->
+      <div class="list" data-list="prompts" style="display:none">
+        <div class="item">
+          <div class="item-ic">&gt;_</div>
+          <div class="item-body">
+            <div class="item-name">summarize_code</div>
+            <div class="item-desc">总结给定源码文件的功能与结构</div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-ic">&gt;_</div>
+          <div class="item-body">
+            <div class="item-name">explain_error</div>
+            <div class="item-desc">解释报错堆栈并给出修复建议</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ---------- MAIN ---------- -->
+    <main class="main">
+      <div class="main-scroll">
+
+        <!-- Tool 头部 -->
+        <div class="tool-head fade-up">
+          <div class="th-ic">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
+          </div>
+          <div>
+            <h2>read_file <span class="ttag">tool</span></h2>
+            <p>读取指定路径文件的完整文本内容。支持指定字符编码，返回文件的原始文本。路径必须为服务端允许访问范围内的绝对路径。</p>
+          </div>
+        </div>
+
+        <!-- 入参 -->
+        <div class="section fade-up" style="animation-delay:.06s">
+          <div class="section-title">
+            输入参数 · Input Schema
+            <span class="req">2 参数 · 1 必填</span>
+            <span class="line"></span>
+          </div>
+          <div class="card">
+            <div class="field">
+              <div class="field-top">
+                <span class="field-name">path</span>
+                <span class="type-tag str">string</span>
+                <span class="req-mark">必填</span>
+                <span class="field-hint">文件的绝对路径</span>
+              </div>
+              <input class="field-input" value="/workspace/src/index.ts" spellcheck="false" />
+            </div>
+            <div class="field">
+              <div class="field-top">
+                <span class="field-name">encoding</span>
+                <span class="type-tag str">string</span>
+                <span class="opt-mark">可选 · 默认 utf-8</span>
+                <span class="field-hint">读取文件时使用的字符编码</span>
+              </div>
+              <input class="field-input" value="utf-8" spellcheck="false" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Run -->
+        <div class="run-bar fade-up" style="animation-delay:.12s">
+          <button class="btn-run" id="runBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            调用 Tool
+          </button>
+          <button class="btn-run-ghost">重置参数</button>
+          <span class="run-meta">⌘ + Enter 执行</span>
+        </div>
+
+        <!-- 结果 -->
+        <div class="result fade-up" style="animation-delay:.18s">
+          <div class="result-head">
+            <span class="result-status"><span class="rdot"></span>调用成功</span>
+            <div class="result-tabs">
+              <span class="rtab active">structuredContent</span>
+              <span class="rtab">content</span>
+              <span class="rtab">raw</span>
+            </div>
+            <div class="result-badges">
+              <span class="rbadge">耗时 <b>142ms</b></span>
+              <span class="rbadge">1.2 KB</span>
+              <button class="copy-btn" title="复制">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="code"><span class="tok-punc">{</span>
+<span class="ln">1</span>  <span class="tok-key">"path"</span><span class="tok-punc">:</span> <span class="tok-str">"/workspace/src/index.ts"</span><span class="tok-punc">,</span>
+<span class="ln">2</span>  <span class="tok-key">"encoding"</span><span class="tok-punc">:</span> <span class="tok-str">"utf-8"</span><span class="tok-punc">,</span>
+<span class="ln">3</span>  <span class="tok-key">"size"</span><span class="tok-punc">:</span> <span class="tok-num">1248</span><span class="tok-punc">,</span>
+<span class="ln">4</span>  <span class="tok-key">"lineCount"</span><span class="tok-punc">:</span> <span class="tok-num">42</span><span class="tok-punc">,</span>
+<span class="ln">5</span>  <span class="tok-key">"truncated"</span><span class="tok-punc">:</span> <span class="tok-bool">false</span><span class="tok-punc">,</span>
+<span class="ln">6</span>  <span class="tok-key">"content"</span><span class="tok-punc">:</span> <span class="tok-str">"import express from 'express';\n\nconst app = express();\napp.listen(3000);"</span>
+<span class="tok-punc">}</span></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="footnote">静态界面预览 · 仅演示风格 / 配色 / 布局</div>
+
+<script>
+  // Tab 切换
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.dataset.tab;
+      document.querySelectorAll('.list').forEach(l => {
+        l.style.display = l.dataset.list === target ? '' : 'none';
+      });
+      document.querySelector('.search input').placeholder = '搜索 ' + target + '…';
+    });
+  });
+
+  // 列表选中高亮
+  document.querySelectorAll('.list').forEach(list => {
+    list.addEventListener('click', e => {
+      const item = e.target.closest('.item');
+      if (!item) return;
+      list.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Headers 展开
+  const hp = document.getElementById('headersPanel');
+  document.getElementById('toggleHeaders').addEventListener('click', () => {
+    hp.classList.toggle('open');
+  });
+
+  // Run 按钮微反馈
+  const runBtn = document.getElementById('runBtn');
+  runBtn.addEventListener('click', () => {
+    const result = document.querySelector('.result');
+    result.classList.remove('fade-up'); void result.offsetWidth; result.classList.add('fade-up');
+  });
+</script>
+</body>
+</html>

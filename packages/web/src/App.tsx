@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Boxes, MousePointerClick } from 'lucide-react';
 import { ConnectionBar } from './components/ConnectionBar.js';
+import { MascotCorner } from './components/MascotCorner.js';
 import { ConnectionSidebar } from './components/ConnectionSidebar.js';
 import { CapabilityList } from './components/CapabilityList.js';
 import { ToolDetailPanel } from './components/ToolDetailPanel.js';
@@ -72,6 +73,8 @@ export default function App() {
 
         <SchemaInspector {...(selected ?? { kind: 'none' })} />
       </div>
+
+      <MascotCorner />
     </div>
   );
 }
@@ -79,7 +82,10 @@ export default function App() {
 function CenterEmpty({ icon, title, hint }: { icon: React.ReactNode; title: string; hint: string }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-8 animate-fadeUp">
-      <div className="w-16 h-16 rounded-2xl bg-stone-0 border border-stone-200 grid place-items-center text-teal-700 shadow-sm mb-4">
+      <div
+        data-mascot-anchor
+        className="w-16 h-16 rounded-2xl bg-stone-0 border border-stone-200 grid place-items-center text-teal-700 shadow-sm mb-4"
+      >
         {icon}
       </div>
       <h2 className="font-display text-[17px] font-bold text-ink-0 mb-1.5">{title}</h2>

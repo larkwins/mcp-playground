@@ -10,8 +10,10 @@ import { SchemaInspector } from './components/SchemaInspector.js';
 import { ErrorToast } from './components/ErrorToast.js';
 import { useAppStore } from './store/appStore.js';
 import { useCapabilities } from './hooks/useCapabilities.js';
+import { useAutoConnectFromUrl } from './hooks/useAutoConnect.js';
 
 export default function App() {
+  useAutoConnectFromUrl();
   const sessionId = useAppStore((s) => s.sessionId);
   const selection = useAppStore((s) => s.selection);
   const { data } = useCapabilities(sessionId);

@@ -1,68 +1,106 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Mascot } from 'page-mascot';
 import { cn } from '../lib/cn.js';
 
 /** 吉祥物尺寸，与下方 <Mascot size> 保持一致，用于计算锚点。 */
 const MASCOT_SIZE = 110;
+/** 停靠左下角时的留白。 */
+const CORNER_LEFT = 16;
+const CORNER_BOTTOM = 12;
 /** 拖动后允许贴到视口边缘的最小留白。 */
 const EDGE = 8;
 /** 超过这个位移才算拖动，否则仍视为点击。 */
 const DRAG_THRESHOLD = 4;
 
 type Point = { x: number; y: number };
+/** logo：默认停在页面中间盖住空白页 logo；corner：页面有交互后停到左下角。 */
+type Dock = 'logo' | 'corner';
+
+const centerAnchor = (): Point => ({
+  x: window.innerWidth / 2 - MASCOT_SIZE / 2,
+  y: window.innerHeight / 2 - MASCOT_SIZE / 2,
+});
+
+const cornerAnchor = (): Point => ({
+  x: CORNER_LEFT,
+  y: window.innerHeight - CORNER_BOTTOM - MASCOT_SIZE,
+});
 
 /**
  * 悬浮吉祥物：通过 portal 挂到 body，position: fixed + 高层级，不参与页面布局，
- * 也不拦截下层交互（只有吉祥物本体可点）。默认停在页面中间、正对空白页的 logo
- * 把它盖住（量 [data-mascot-anchor] 的实际位置，量不到时退回视口中心）。
- * 支持按住拖动到任意位置（限制在视口内），位移小于阈值仍按点击交给 Mascot 出表情。
+ * 也不拦截下层交互（只有吉祥物本体可点）。
+ *
+ * 首次进入停在页面中间、正对空白页的 logo 把它盖住；页面一旦发生交互（点击、
+ * 按键、或别处按下），就滑到左下角停靠。支持按住拖动到任意位置（限制在视口内），
+ * 位移小于阈值仍按点击交给 Mascot 出表情，双击回到当前停靠位。
  */
 export function MascotCorner() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ startX: 0, startY: 0, baseX: 0, baseY: 0, moved: false });
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
-  const [anchor, setAnchor] = useState<Point | null>(null);
+  const [dock, setDock] = useState<Dock>('logo');
+  const [logoRect, setLogoRect] = useState<DOMRect | null>(null);
+  const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight });
   const [dragging, setDragging] = useState(false);
 
-  // 只在挂载和窗口尺寸变化时测量：锚点是「默认停靠位」，之后的位置由拖动决定。
+  // 测量空白页 logo 的位置；窗口变化时重新测量。
   useLayoutEffect(() => {
     const measure = () => {
       const logo = document.querySelector<HTMLElement>('[data-mascot-anchor]');
-      if (logo) {
-        // 正对 logo 居中，即刚好盖住 logo
-        const rect = logo.getBoundingClientRect();
-        setAnchor({
-          x: rect.left + rect.width / 2 - MASCOT_SIZE / 2,
-          y: rect.top + rect.height / 2 - MASCOT_SIZE / 2,
-        });
-        return;
-      }
-      setAnchor({
-        x: window.innerWidth / 2 - MASCOT_SIZE / 2,
-        y: window.innerHeight / 2 - MASCOT_SIZE / 2,
-      });
+      setLogoRect(logo ? logo.getBoundingClientRect() : null);
+      setViewport({ w: window.innerWidth, h: window.innerHeight });
     };
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   }, []);
 
-  /** 把偏移量限制在视口范围内，避免拖出屏幕。 */
-  const clamp = (next: Point): Point => {
-    const el = wrapRef.current;
-    if (!el || !anchor) return next;
-    const w = el.offsetWidth;
-    const h = el.offsetHeight;
-    const minX = EDGE - anchor.x;
-    const maxX = window.innerWidth - EDGE - w - anchor.x;
-    const minY = EDGE - anchor.y;
-    const maxY = window.innerHeight - EDGE - h - anchor.y;
+  const anchor: Point = useMemo(() => {
+    if (dock === 'corner') return cornerAnchor();
+    if (!logoRect) return centerAnchor();
+    // 正对 logo 居中，即刚好盖住 logo
     return {
-      x: Math.min(Math.max(next.x, Math.min(minX, maxX)), Math.max(minX, maxX)),
-      y: Math.min(Math.max(next.y, Math.min(minY, maxY)), Math.max(minY, maxY)),
+      x: logoRect.left + logoRect.width / 2 - MASCOT_SIZE / 2,
+      y: logoRect.top + logoRect.height / 2 - MASCOT_SIZE / 2,
     };
-  };
+    // viewport 参与依赖：窗口尺寸变化后需要按新尺寸重算
+  }, [dock, logoRect, viewport]);
+
+  // 页面出现交互就停靠到左下角；吉祥物自身的按下/拖动不算。
+  useEffect(() => {
+    if (dock !== 'logo') return;
+    const onInteract = (e: Event) => {
+      const target = e.target as Node | null;
+      if (wrapRef.current && target && wrapRef.current.contains(target)) return;
+      setDock('corner');
+    };
+    window.addEventListener('pointerdown', onInteract, true);
+    window.addEventListener('keydown', onInteract, true);
+    return () => {
+      window.removeEventListener('pointerdown', onInteract, true);
+      window.removeEventListener('keydown', onInteract, true);
+    };
+  }, [dock]);
+
+  /** 把偏移量限制在视口范围内，避免拖出屏幕。 */
+  const clamp = useCallback(
+    (next: Point): Point => {
+      const el = wrapRef.current;
+      if (!el) return next;
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      const minX = EDGE - anchor.x;
+      const maxX = window.innerWidth - EDGE - w - anchor.x;
+      const minY = EDGE - anchor.y;
+      const maxY = window.innerHeight - EDGE - h - anchor.y;
+      return {
+        x: Math.min(Math.max(next.x, Math.min(minX, maxX)), Math.max(minX, maxX)),
+        y: Math.min(Math.max(next.y, Math.min(minY, maxY)), Math.max(minY, maxY)),
+      };
+    },
+    [anchor]
+  );
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
@@ -96,6 +134,12 @@ export function MascotCorner() {
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
+    // 拖动也是交互：换成左下角锚点，同时换算偏移量，让吉祥物停在松手的位置不跳。
+    if (dock === 'logo') {
+      const next = cornerAnchor();
+      setOffset((o) => ({ x: o.x + anchor.x - next.x, y: o.y + anchor.y - next.y }));
+      setDock('corner');
+    }
   };
 
   const resetOffset = () => setOffset({ x: 0, y: 0 });
@@ -114,17 +158,14 @@ export function MascotCorner() {
           e.preventDefault();
         }
       }}
-      title="拖动我 · 双击回到默认位置"
+      title="拖动我 · 双击回到停靠位"
       className={cn(
         'fixed z-[9999] pointer-events-auto select-none touch-none',
-        'transition-shadow',
-        dragging ? 'cursor-grabbing' : 'cursor-grab'
+        dragging ? 'cursor-grabbing' : 'cursor-grab transition-[left,top] duration-500 ease-out'
       )}
       style={{
-        left: (anchor?.x ?? 0) + offset.x,
-        top: (anchor?.y ?? 0) + offset.y,
-        // 量到锚点前先不显示，避免闪一下左上角
-        visibility: anchor ? 'visible' : 'hidden',
+        left: anchor.x + offset.x,
+        top: anchor.y + offset.y,
       }}
     >
       <Mascot
